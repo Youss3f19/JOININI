@@ -30,30 +30,32 @@ exports.signup = async (req, res) => {
 
 // Login
 exports.login = (req, res) => {
-    let data = req.body;
-    User.findOne({ email: data.email })
-        .then((user) => {
-            if (!user) {
-                return res.status(400).send('Mail invalid!');
-            }
-            bcrypt.compare(data.password, user.password, (err, valid) => {
-                if (err) return res.status(500).send('Error occurred: ' + err.message);
-                if (!valid) return res.status(400).send('Password invalid!!');
-         
-                let payload = {
-                    _id: user._id,
-                    email: user.email,
-                    fullname: user.name + ' ' + user.lastname,
-                    role: user.role
-                };
-                let token = jwt.sign(payload, '123456789');
-                res.status(200).send({ mytoken: token });
-            });
-        })
-        .catch((err) => {
-            res.status(400).send('Error occurred: ' + err.message);
-        });
+  let data = req.body;
+  User.findOne({ email: data.email })
+      .then((user) => {
+          if (!user) {
+              return res.status(400).send('Mail invalid!');
+          }
+          bcrypt.compare(data.password, user.password, (err, valid) => {
+              if (err) return res.status(500).send('Error occurred: ' + err.message);
+              if (!valid) return res.status(400).send('Password invalid!!');
+       
+              let payload = {
+                  _id: user._id,
+                  email: user.email,
+                  name: user.name ,
+                  lastname : user.lastname,
+                  role: user.role,
+              };
+              let token = jwt.sign(payload, '123456789');
+              res.status(200).send({ mytoken: token , user : user });
+          });
+      })
+      .catch((err) => {
+          res.status(400).send('Error occurred: ' + err.message);
+      });
 };
+
 
 // Recuperer un utilisateur par ID
 exports.getUserById = async (req, res) => {
@@ -88,3 +90,21 @@ exports.updateUser = async (req, res) => {
     res.status(500).json({ message: 'Error updating user', error });
   }
 };
+
+
+exports.verifyToken = (req, res) => {
+  const token = req.body.token;    
+  if (token) {
+      const decode = jwt.verify(token, '123456789');
+      res.status(200).json({
+          login: true,
+          user: decode,
+          isAdmin: decode.role === 'admin'
+      });
+  } else {
+      res.status(400).json({
+          login: false,
+          data: 'error'
+      });
+  }
+}
