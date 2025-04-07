@@ -2,12 +2,13 @@ const Destination = require('../models/Destination');
 
 exports.createDestination = async (req, res) => {
     try {
-      const { name, description } = req.body;
+      const { name, description , country} = req.body;
       const imageUrl = req.filename ? `/uploads/${req.filename}` : null;
   
       const newDest = new Destination({
         name,
         description,
+        country,
         image: imageUrl,
       });
       console.log(req.body);
