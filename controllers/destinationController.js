@@ -10,7 +10,8 @@ exports.createDestination = async (req, res) => {
         description,
         image: imageUrl,
       });
-  
+      console.log(req.body);
+      console.log(req.file);
       await newDest.save();
       res.status(201).json(newDest);
     } catch (error) {
