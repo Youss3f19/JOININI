@@ -10,9 +10,7 @@ router.post('/', auth, upload.single('file'), tripCtrl.createTrip);
 router.get('/', auth, tripCtrl.getTrips);
 router.get('/:id', auth, tripCtrl.getTripById);
 
-// GET /api/trips/filter?startDate=2025-04-01&endDate=2025-04-10
-router.get('/filter', auth, tripCtrl.getTripsBetweenDates);
-
+router.get('/available/:destinationId', auth, tripCtrl.getAvailableTrips);
 // Admins can update and delete trips
 router.put('/:id', auth, authorize(['admin']), upload.single('file'), tripCtrl.updateTrip);
 router.delete('/:id', auth, authorize(['admin']), tripCtrl.deleteTrip);

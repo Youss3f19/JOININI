@@ -29,25 +29,58 @@ exports.deleteTrip = async (req, res) => {
   trip ? res.json({ message: 'Trip deleted' }) : res.status(404).json({ message: 'Trip not found' });
 };
 
-// GET trips between dateDepart and dateArrive
-exports.getTripsBetweenDates = async (req, res) => {
-    try {
-      const { startDate, endDate } = req.query;
-  
-      if (!startDate || !endDate) {
-        return res.status(400).json({ message: 'startDate and endDate are required as query params' });
-      }
-  
-      const trips = await Trip.find({
-        dateDepart: { $gte: new Date(startDate) },
-        dateArrive: { $lte: new Date(endDate) }
-      })
-        .populate('user')
-        .populate('destination');
-  
-      res.json(trips);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+// Dans votre controller (tripController.js)
+exports.getAvailableTrips = async (req, res) => {
+  try {
+    const { destinationId } = req.params;
+    const { startDate, endDate } = req.query;
+
+    // Vérification des paramètres requis
+    if (!startDate || !endDate) {
+      return res.status(400).json({ 
+        message: 'Les dates de début et de fin sont requises' 
+      });
     }
-  };
-  
+
+    // Conversion des dates
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start) || isNaN(end)) {
+      return res.status(400).json({ 
+        message: 'Format de date invalide' 
+      });
+    }
+
+    // Recherche des voyages disponibles
+    const trips = await Trip.find({
+      destination: destinationId,
+      $or: [
+        {
+          departureDate: { $gte: start, $lte: end }
+        },
+        {
+          returnDate: { $gte: start, $lte: end }
+        },
+        {
+          departureDate: { $lte: start },
+          returnDate: { $gte: end }
+        }
+      ]
+    })
+    .populate('user')
+    .populate('destination');
+
+    if (!trips.length) {
+      return res.status(404).json({ 
+        message: 'Aucun voyage trouvé pour ces critères' 
+      });
+    }
+
+    res.json(trips);
+  } catch (err) {
+    res.status(500).json({ 
+      error: err.message 
+    });
+  }
+};

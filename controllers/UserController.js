@@ -45,6 +45,7 @@ exports.login = (req, res) => {
                   email: user.email,
                   name: user.name ,
                   lastname : user.lastname,
+                  phone : user.phone,
                   role: user.role,
               };
               let token = jwt.sign(payload, '123456789');
